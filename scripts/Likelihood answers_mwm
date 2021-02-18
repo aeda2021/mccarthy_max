@@ -1,0 +1,28 @@
+Q1. The plot of the test statistic will be a curve with a minimum near the MLE (0.2), increasing further away from the MLE.
+Q2.a. plot(p.test, chi)
+abline(a = 1.92, b = 0)
+b. 95%CI: 0.1-0.4
+  I got this estimate by estimating the approximate values of p at the points where the test statistic is equal to 1.92.
+Q3.a. 95%CI: 0.149-0.259
+b. L2 <- dbinom(20, 100, p.test)
+plot(p.test, L2, type = 'l')
+# CIs:
+abline(v = .149, lty = 2)
+abline(v = .259, lty = 2)
+Q4.a. As degrees of freedom increase (greater difference in the number of parameters between the models being compared), the thickness of the right tail of the distributions increases (greater probability of high likelihood ratio as the number of parameters in the more complex model increases).
+b. As degrees of freedom increase, there's a higher probability that the model will fit well by chance.
+Q5. In the context of a Likelihood Ratio Test, the p-value describes the probability that the more complex model does not explain more of the variation in the data than the simpler model.
+Q6.a. The chi square statistics and p values in this output each refer to the likelihood ratio test of a more complex model versus the simpler model before it (there's 1 degree of freedom for each test because each model has one additional parameter that was not included in the model before it).
+b. The null hypotheses being tested are that each progressively more complex model does not offer significantly more predictive power than the less-complex model before it.
+c. The variable Sex offers significant predictive power.
+Q8. I know these models aren't nested because the variables included in the simpler model are not just a subset of those complex one (cannot make the more-complex model match the simpler one by setting one or more of the coefficients equal to zero).
+Q9. deltaAIC describes the difference in AIC values between a particular model and the model with the lowest AIC in a set of models being compared. This is useful because AIC values should be interpreted relative to those of competing models - the difference between them is informative for determining which of several models is most appropriate for describing the data (has the lowest AIC).
+Q10. Of the models I tested (intercept-only, Age, Sex, Pclass, Sex+Pclass, Sex+Age), the best model includes Sex and Pclass as predictors.
+Q11.a. The poisson distribution seems to be best; although it has a slightly lower likelihood, the AIC value for the poisson distribution is lower than for the negative binomial.
+b. This inference is based on comparison of the probability of the data given each possible distribution (determining likelihood and, in turn, AIC, of the possible distributions)
+Q12. Unlike the first (data-dredging) approach, the second approach is clearly hypothesis-driven and data are collected accordingly with the goal of exploring the effects of likely, biologically/ecologically-relevant predictors (as opposed to the first approach, which examines potential predictive power of variables without considering ecological meaning). The first approach results in a model with some combination of apparently-predictive variables, though the mechanism by which they influence the response (and whether their apparent predictive power is biologically meaningful) is unclear. The second approach is much more informative for understanding the contributions of predictors to the observed outcome and for developing further research questions to explore the nature of these relationships.
+Q13. Variables 3, 4, and 12 seem to be the most important, as these are the variables included in the model with the lowest AIC.
+
+
+
+
