@@ -87,11 +87,12 @@ require(lmerTest)
 
 me1 <- lmer(log10Spo ~ fInfection01*sBeesN + (1|fhive), data = Bees)
 
+
 # Q7. Step 5. Compare the linear regression and ME model(s) with a likelihood ratio test, including correction for testing on the boundary if needed. Use the anova() command. This will re-fit your lmer model with maximum likelihood, but this is OK (note there are some debates about exactly how to best compare an lm and lmer model). Show your work and the results. Which random effect structure do you choose based on the results?
 
 anova(me1, lm1)
 
-# The mixed effects model with random slopes that vary by hive (for infection status) has both the lowest AIC and lowest negative log likelihood of the models compared here, suggesting this random effect structure is best for modeling this data.
+# The mixed effects model with a random intercept that varies by hive (for infection status) has both the lowest AIC and lowest negative log likelihood of the models compared here, suggesting this random effect structure is best for modeling this data.
 
 # Q8. Step 6. Check the model: plot standardized residuals vs. fitted values and vs. each predictor. (You can get standardized residuals with residuals(yourmodel, type='pearson')). How do they look?
 
@@ -134,6 +135,7 @@ plot(me3c.fit, me3c.resids)
 plot(Bees$fInfection01, me3c.resids)
 plot(Bees$sBeesN, me3c.resids)
 
+# Based on these plots of residuals, this model seems to fit the data reasonably well. In all cases, distribution of residuals appears to be fairly even. The plot of residuals against fitted values shows some decrease in variance of residuals as fitted values increase, but the pattern isn't drastic.
 
 # Q12. Step 10. Interpret the model. The summary() command is useful here. What have you learned about American Foulbrood? 
 
@@ -143,7 +145,6 @@ summary(me3c)
 
 # Q13. Calculate the correlation between observations from the same hive as variance(fhive random effect)/(variance(fhive random effect) + variance(residual)). Given the correlation among observations from the same hive, do you think it's a good use of time to sample each hive multiple times? Why or why not?
 
+0.9095 / (0.9095 + 0.1138)
 
-
-
-
+# Considering this correlation, it probably isn't necessary to sample hives multiple times. It seems that most colonies do not experience great variation in spore densities between measurements, so a single measurement is likely sufficient to reflect the prevalence of spores in a given colony.
