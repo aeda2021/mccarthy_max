@@ -402,7 +402,7 @@ plotPost(fm.crabs.dat$b1, main = 'beta 1')
 * Given our data and assumptions, what is the probability that salinity has no effect (approximately)?
 
 *Answer:*
-The expected number of burrows is 10.70 (95% CI: 9.68-12.68). In this model, the intercept predicts the number of burrows at the mean salinity value. If salinity was not centered, the intercept would instead predict the number of burrows at zero salinity. For every 1-unit increase in log salinity, the number of burrows is predicted to increase by about 1.03 (95% CI: 1.02-1.05). Considering these results, it appears there is a <5% probability that salinity actually has no effect.
+The expected number of burrows is 10.70 (95% CI: 9.68-12.68). In this model, the intercept predicts the number of burrows at the mean salinity value. If salinity was not centered, the intercept would instead predict the number of burrows at zero salinity. For every 1-unit increase in  salinity, the log number of burrows is predicted to increase by about 0.0367 (95% CI: 0.0204-0.0472). Considering these results, it appears there is a <5% probability that salinity actually has no effect.
 
 ## Hierarchical model
 
@@ -441,6 +441,7 @@ tick.mod <- function(){
   sig.sq~dgamma(1,1)
   sigma <- sqrt(sig.sq)
 }
+
 ```
 
 Here, set up your data list and initial values.
@@ -500,7 +501,7 @@ Plot posteriors for EC occurrence, the effects of forest area, edge, and type, a
 ```{r Try it - results, eval=F}
 
 plotPost(fm.ticks.dat$bmean, main = "intercept")
-plogis(-0.944)
+plogis(-0.96)
 plotPost(fm.ticks.dat$b1, main = "forest cover")
 plotPost(fm.ticks.dat$b2, main = "fragmentation")
 plotPost(fm.ticks.dat$b3, main = "forest quality")
@@ -511,4 +512,4 @@ plotPost(fm.ticks.dat$sig.sq)
 
 *Answer:*
 
-EC occupancy at these sites was approximately 28%. Forest cover and fragmentation both seem to have had effects on EC occurrence, as 95% confidence intervals around the mode in the posterior distributions of those variables do not overlap zero (unlike the 95% CI for forest quality). Based on this analysis, I would conclude that
+EC occupancy at these sites was approximately 28%. Forest cover and fragmentation both seem to have had effects on EC occurrence, as 95% confidence intervals around the mode in the posterior distributions of those variables do not overlap zero (unlike the 95% CI for forest quality). Based on this analysis, I would conclude that probability of EC occupancy declines with both increasing forest cover and increasing forest fragmentation.
