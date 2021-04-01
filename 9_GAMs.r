@@ -29,6 +29,8 @@ mod1 <- lm(Sources~SampleDepth, data = ISITsub)
 
 # Q1: What was your code for fitting a linear regression of Sources vs. SampleDepth?
 
+# lm(Sources~SampleDepth, data = ISITsub)
+
 # We'll predict the mean response and confidence intervals from this model and save the output
 ISITsub$mod1 <- predict(mod1)
 ISITsub$mod1lwr <- predict(mod1, interval='confidence', level=0.95)[,'lwr']
@@ -79,7 +81,7 @@ ggplot(ISITsub, aes(x=SampleDepth, y=Sources)) +
 
 # Q4: Has the fit between the model and the data improved? What's the downside of continuing the split the data into finer and finer chunks and fitting more models?
 
-# The fit between the model and the data has improved by using multiple linear regression lines, but continually dividing the data will result in overfitting as the models accurately describe the particular dataset they're being fit to.
+# The fit between the model and the data has improved by using multiple linear regression lines, but continually dividing the data will result in overfitting as the models come closer to describing the exact dataset they're being fit to (rather than being generally representative of the ecological pattern of interest).
 
 # Now, it's your turn. Please fit 10 linear regression models. I'd recommend using the 2-model code above as a guide and tweaking it.
 
@@ -159,21 +161,19 @@ gam.check(gam1)
 
 # Q9: Fit a new GAM with a more appropriate error structure and save it as "mod2". The gam() function takes the same family= argument as does glm(). Which error structure and link function did you choose?
 
-gam2 <- gam(presfit01 ~ s(SBT.actual, k = 6), data = spdata, family = binomial)
-gam.check(gam2)
+gam2 <- gam(presfit01 ~ s(SBT.actual, k = 8), data = spdata, family = binomial)
 
 # I selected binomial error structure with the default logit link, which seems more suitable for this presence/absence data.
 
 # Q10: Check your mod2 GAM. Does it look like the assumptions have been met? Make sure to read the text output as well as look at the graphs. If something doesn't look right, what would you do to fix it?
 
-gam3 <- gam(presfit01 ~ s(SBT.actual, k = 8), data = spdata, family = binomial)
+gam.check(gam2)
 
-gam.check(gam3)
+# Two potential issues stand out that might suggest assumptions have not been met: the histogram of residuals does not quite look linear (perhaps right skewed?) and the plot of residuals against the linear predictor shows greater spread at the extreme right side of the plot.
 
 # Q11: Interpret your mod2 GAM (summary function). How much deviance is explained? Is the SBT.actual term significant at alpha=0.05? How wiggly do you expect the smooth fit to be?
 
 summary(gam2)
-summary(gam3)
 
 # This model explains 26.5% of the deviance and the SBT.actual term is significant. The edf of 6.975 suggests that the fit is likely strongly curved/wiggly.
 
@@ -203,6 +203,6 @@ library(MuMIn)
 
 gam4 <- gam(presfit01 ~ s(SBT.actual, k = 8) + region, data = spdata, family = binomial)
 
-model.sel(gam3, gam4)
+model.sel(gam2, gam4)
 
 # The model that incorporates region as a predictor has a far lower AIC than the model using only temperature, so I am confident that the model using both predictors is the more appropriate model for these data.
