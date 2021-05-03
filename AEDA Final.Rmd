@@ -1,0 +1,400 @@
+---
+title: "AEDA Final Project"
+author: "Max McCarthy"
+date: "5/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(dplyr) # for data manipulation
+library(maps) # for mapping site locations
+library(ggplot2) # for plotting
+require(lme4) # for generalised linear mixed models
+require(DHARMa) # for diagnostic assessment of GLMMs
+require(car) # for two-way anova (Anova)
+require(nlme)
+```
+
+#### Introduction
+Animal pollination is a vital but imperiled ecosystem service required by most plant species in both natural and agricultural systems (. Considering the role pollinators play in supporting reproduction of plants, maintaining robust plant-pollinator networks is both economically valuable and a key goal for conservation of terrestrial biodiversity. Recent evidence pointing toward widespread disruption of plant-pollinator networks as a result of anthropogenic activities, as well declining populations of some prominent pollinators, has stimulated interest in restoring interactions between plants and pollinators, particularly bees
+
+Current efforts targeting restoration of plant and bee communities have focused largely on increasing floral richness. Both theory and empirical evidence suggest positive correlation between plant and bee richness. Diverse plant communities provide floral resources over a longer period of time than less-diverse communities and are more likely to have multiple species flowering at a given point in time, buffering bee visitors against variation in abundance of any given plant species. Additionally, declines in floral richness have been implicated as a contributing factor in declining bumble bee populations. While restoration efforts aiming to increase floral richness have been widely implementated, relatively little evidence exists describing the success of such efforts in achieving this goal. Differences in survival of species introduced during restoration, as well as recruitment of preexisting species from seeds, could cause the richness and composition of restored areas to deviate from that of the initial restored community. Documenting not only the composition of post-restoration communities but how they compare to unrestored communities is also valuable for understanding whether plant communities introduced via restoration serve to either replace or augment existing communities and the impacts such changes might have on bee and other pollinator communities and network structure.
+
+Effects of restoration on bee communities are similarly difficult to predict. Restoration efforts frequently implement a "one-size-fits-all" approach that uses general management practices thought to support general bee diversity, but that do not target any particular group. Nevertheless, bee taxa are known to vary widely in their biotic and abiotic requirements, particularly with respect to floral resources and nesting substrates. Bees' floral preferences and diet breadths span a spectrum from broad generalization to extreme specialization in which a given bee species collects pollen from only a small number of related plant species. As such, standardized seed mixes used in habitat restoration may neglect the resource requirements of many species found in a regional bee community. Meanwhile, some plant families that support an inordinate diversity of specialist bees (e.g., Asteraceae) are common components of communities in even unrestored, disturbed, and degraded open habitats. If restored plant communities largely cater to generalist bees that may also be supported by plants flowering in unrestored sites, effects of restoration on bee richness may be relatively small. Management may also have differential impacts on bees utilizing different nesting locations. In open sites, ground-nesting bee species may be more likely to be nesting within the restored area itself than species nesting above ground in locations such as dead wood and stems and therefore may be more directly affected by changes in abiotic conditions due to restoration.
+
+Beyond impacts on plant and bee communities alone, restoration is also likely to alter the structure of interaction networks. Restored plant communities may feature both species that occurred in the area prior to restoration as well as those added via restoration. The consequences of enhanced plant community richness for species occurring in both pre- and post-restoration communities are unclear. In particular, the number of different bee species visiting flowers of a given plant species could potentially increase or decrease as plant community richness increases, depending on effects of restoration on bee communities. If restoration increases bee community richness or the abundance of previously-uncommon bee species, individual plants may be more likely to receive visits from a larger variety of species in restored plots than unrestored plots. Alternatively, increasing plant species richness may drive competition for bees, causing some plants to receive fewer floral visitors than prior to restoration. This effect could be exacerbated if rich plant communities that are more likely to contain preferred floral resources also experience either greater resource partitioning among bee species or greater differences in visitation between preferred resources and other species.
+
+Using data collected in a paired study design over several years, I compared diversity of plant and bee communities and observations of species-specific plant-bee interactions at restored and unrestored field plots to ask 1) Does species richness of flowering plants and bees differ between restored and unrestored plots? 2) Do responses of bee species richness to restoration differ between groups that utilize different nesting substrates? And 3) does the number of bee species with which plant species interact differ between restored and unrestored areas?
+
+
+#### Methods
+
+### Site Selection and Establishment
+Study sites were selected from a pool of locations in New Jersey and Pennsylvania, USA, at which landowners working with the Xerces Society and/or NRCS had established "restored" plots seeded with a variety of plants attractive to native pollinators. Selected sites included plots that received extensive full sun (conducive to activity of pollinating insects), were no greater than four acres in area (but were also sufficiently large to establish four, 40- by 2-meter transects), and were within 800 meters of an unmowed, unrestored field plot that overlapped somewhat in vegetative composition. These criteria were met at 19 locations throughout New Jersey and two in Pennsylvania, resulting in a total of 21 study sites (Fig. 1). Four 40- by 2-meter observation and sampling transects were established in parallel pairs within each plot. At each site, sampling was conducted in four rounds per year between spring (late May) and August, covering the expected flowering period for most pollinator-attracting flowering plants in open habitats in this region. Individual sites were visited for between one and four years.
+
+```{r map field site locations, fig.cap = "Figure 1. Locations of selected study sites. Data were collected from 21 sites with paired plots of restored and unrestored field vegetation in New Jersey and Pennsylvania, USA"}
+
+# load field site location data
+sites <- read.csv("cig_sites.csv")
+
+# generate map
+world <- map_data('world')
+
+# plot site latitude and longitude
+ggplot() + borders("state") +
+  geom_polygon(data=world, aes(x=long, y=lat, group=group), color='black', fill=NA) + # the map
+  xlim(-81, -73) + 
+  ylim(38, 45) +
+  geom_point(data=sites, aes(x=as.numeric(longitude), y=as.numeric(latitude)), size=2) + theme_void()
+
+```
+
+### Data Collection
+
+## Floral Richness
+In each sampling round, flowering plants were surveyed along transects within each plot. Species-specific flower counts were recorded within one-by-one-meter quadrats sampled at four-meter increments along each transect, alternating placement of the quadrat on either side of the transect (for a total of ten quadrats per 40-meter transect).
+
+```{r load/prepare floral richness data}
+fl_counts <- read.csv("cig_fl_abundance.csv")
+fl_counts <- filter(fl_counts, is.na(fl_counts$f_number) == F & f_number != "null")
+fl_counts$plantname <- paste(fl_counts$plant_genus, fl_counts$plant_species, sep = "_")
+
+# Make treatment/control variables match with cig_spec dataframe
+fl_counts$t_c <- replace(fl_counts$t_c, fl_counts$t_c == "t", "T")
+fl_counts$t_c <- replace(fl_counts$t_c, fl_counts$t_c == "c", "C")
+
+fl_counts$f_number <- replace(fl_counts$f_number, fl_counts$f_number == "NONE", 0)
+fl_counts$f_number <- replace(fl_counts$f_number, fl_counts$f_number == "NOT_FLOWERING", 0)
+fl_counts$n <- as.numeric(as.character(fl_counts$f_number))
+
+# Ensure that all columns that should be factors *are* factors
+fact <- c("t_c", "year", "site", "round", "plantname")
+fl_counts[fact] <- lapply(fl_counts[fact], factor)
+
+# Remove plants that aren't ID'd to species level
+gen <- fl_counts$plant_genus
+sp <- fl_counts$plant_species
+notsp <- unique(sp[sp %in% gen])
+fl_counts <- subset(fl_counts, !(sp %in% notsp))
+fl_counts <- filter(fl_counts, plant_species != "sp" & plant_species != "FALSE")
+
+# Transform floral abundance data into a data frame of floral richness in each plot in each year, removing observations of transects with no flowers present
+
+fl_rich <- fl_counts %>% filter(plant_genus != "NONE", is.na(plant_genus) == F) %>% group_by(year, site, t_c) %>% summarise(plant_richness = length(unique(plantname)), tot_fl = sum(n))
+fl_rich$combo <- paste(fl_rich$year, fl_rich$site, fl_rich$t_c, sep = "")
+fl_rich <- fl_rich[,4:6]
+```
+
+## Bee Richness and Interactions
+Bees were sampled along the same transects on which floral surveys were conducted. During a ten-minute data collection period, an observer walked along the transect, catching any bees observed visiting flowers within the transect area, collecting them, and recording the identity of the flower the bee was visiting when it was captured. Honey bees were ignored during the collection process, as this species exists primarily as a managed pollinator in the study region and its abundance at a given site and time may be dependent on nearby use of domestic colonies. Sampling was conducted only in sunny or bright overcast weather with temperatures about 16 degrees Celsius and wind speeds under 3.5 meters per second. All collected bee specimens were later identified to the highest level of taxonomic resolution possible; with the exception of a small number of individuals in the genera Andrena, Ceratina, Hylaeus, Nomada, and Triepeolus, most specimens were identified to species. Nesting functional group trait information was determined at the genus level, as the particular nesting habits of most species used in this analysis are not well-known, but broad nesting locations (above or below ground) tend to be consistent within these genera.
+
+```{r load/prepare bee richness/interaction data}
+## Bee Richness
+# Load bee specimen/plant association data
+cig_spec <- read.csv("cig_spec.csv")
+
+# Add columns for complete scientific names of bees and plants
+cig_spec$beename <- paste(cig_spec$genus, cig_spec$species, sep = "_")
+cig_spec$plantname <- paste(cig_spec$plant_genus, cig_spec$plant_species, sep = "_")
+
+# Add information on nesting habits (at genus level); G = nests below ground, A = nests above ground
+genus <- as.data.frame(unique(cig_spec$genus))
+nesttype <- c("G", "G", "A", "G", "A", "G", "A", "G", "G", "A", "A", "A", "A", "G", "G", "A", "G", "G", "G", "G", "A", "G", "A", "G", "A", "A", "A", "G", "G", "G", "G", "G", "G")
+
+nestloc <- cbind(genus, nesttype)
+names(nestloc) <- c("genus", "nesttype")
+cig_spec <- left_join(cig_spec, nestloc, by = "genus")
+
+# Ensure that all columns that should be factors *are* factors
+factcols <- c("year", "round", "site", "treatment", "beename", "plantname", "nesttype")
+cig_spec[factcols] <- lapply(cig_spec[factcols], factor)
+
+# Remove bees that aren't ID'd to species level
+cig_spec <- filter(cig_spec, species != "sp")
+
+# Create bee species richness dataframe
+richness <- cig_spec %>% group_by(year, site, treatment, nesttype) %>% summarise(bee_richness = length(unique(beename)))
+# Make column with which to join plot bee richness and floral richness and abundance data
+richness$combo <- paste(richness$year, richness$site, richness$treatment, sep = "")
+richness <- left_join(richness, fl_rich, by = "combo")
+richness_NArm <- filter(richness, is.na(tot_fl) == F)
+richness_NArm$scale_fl <- scale(richness_NArm$tot_fl)
+
+## Bee-Plant Interactions
+
+# Which plants occur in both restored and unrestored plots? I focus on these species for comparing numbers of interactions between treatments.
+oldfield_fl <- unique(filter(cig_spec, treatment == "C")$plantname)
+restoration_fl <- unique(filter(cig_spec, treatment == "T")$plantname)
+overlap_fl <- unique(restoration_fl[restoration_fl%in%oldfield_fl])
+cig_overlap <- subset(cig_spec, plantname %in% overlap_fl)
+
+# Data frame with summed abundances of each plant species in each plot in each year (plot-year)
+sp_sums <- fl_counts %>% group_by(year, site, t_c, plantname) %>% summarise(sum_count = sum(n))
+sp_sums$matchID <- paste(sp_sums$plantname, sp_sums$year, sp_sums$site, sp_sums$t_c, sep = "")
+sp_sums <- sp_sums[,5:6]
+
+# Data frame with number of interactions per plant species in each plot-year
+interactions <- cig_overlap %>% group_by(plantname, year, site, treatment) %>% summarise(n_interactions = n_distinct(beename))
+interactions$matchID <- paste(interactions$plantname, interactions$year, interactions$site, interactions$treatment, sep = "")
+interactions <- left_join(interactions, sp_sums, by = "matchID")
+interactions$scale_count <- scale(interactions$sum_count)
+
+```
+
+
+### Analysis
+I analyzed relationships between plant and bee species richness, bee-plant interactions, and plot restoration treatments using generalized linear mixed models (GLMMs) in order to account for both hierarchical structure that exists in this dataset (multiple plant species sampled across sites over several years) and a potential need to accomodate non-normal error structure that is expected in ecological count data. Flowering plant richness, bee richness, and interaction diversity counts were all highly right-skewed.
+
+```{r data visualization}
+# Flowering plant richness counts
+hist(richness$plant_richness, main = "Flowering Plant Species Richness", xlab = "Richness")
+
+# Bee species richness counts
+hist(richness$bee_richness, main = "Bee Species Richness", xlab = "Richness")
+
+# Interaction diversity counts
+hist(interactions$n_interactions, main = "Interaction Richness", xlab = "# Interactions")
+```
+
+I performed model selection by first choosing random effects through AIC comparison of the most complex model, models with each random effect alone, and a generalised linear model. In some cases, the most complex model possible was found to be overfit to he data; in these situations, I excluded that model from consideration and began comparison with the next simplest models. Additional AIC comparison and significance testing by two-way anova were used to select fixed effects. Scaled floral abundances were included as fixed predictors in models of bee richness and interactions (site-level and plant species level abundances, respectively) in order to account for differences in richness and interactions observed as a result of differences in floral sampling; an offset was not used because bee richness and interactions recorded may not necessarily be expected to increase linearly with sampling (subsequent samples may be less likely to detect new species and interactions). Finally, I used both AIC comparison and analysis of diagnostic residual plots to select either a Poisson or negative binomial error structure for each model; these error distributions seemed particularly plausible considering the bounded and skewed nature of this count data. All models were fit in R using the *glm* function and *glmer* and *glmer.nb* functions of the package *lme4*. Diagonostic QQ plots were created using the package *DHARMa*.
+
+## Question 1: Does plant community richness differ between restored (treatment) and unrestored (control) plots?
+
+```{r question 1 model selection}
+# Build model with all fixed and random effects
+fl_rich_m1 <- glmer(plant_richness ~ treatment + (1|site) + (1|year), data = richness, family = poisson)
+
+# Only site random effect
+fl_rich_m2 <- glmer(plant_richness ~ treatment + (1|site), data = richness, family = poisson)
+
+# Only year random effect
+fl_rich_m3 <- glmer(plant_richness ~ treatment + (1|year), data = richness, family = poisson)
+
+# No random effects (GLM)
+fl_rich_m4 <- glm(plant_richness ~ treatment, data = richness, family = poisson)
+
+# AIC comparison to evaluate random effects
+anova(fl_rich_m1, fl_rich_m2, fl_rich_m3, fl_rich_m4)
+# The model including both site and year as random effects has the lowest AIC - keep both random effects
+
+# Is a Poisson or negative binomial error distribution more appropriate?
+fl_rich_m5 <- glmer.nb(plant_richness ~ treatment + (1|site) + (1|year), data = richness)
+anova(fl_rich_m1, fl_rich_m5)
+# AIC values suggest the negative binomial is a better fit; now check with DHARMa
+fl_rich_m5_sim <- simulateResiduals(fittedModel = fl_rich_m5, plot = F)
+plot(fl_rich_m5_sim)
+# No significant deviation from expectation; this seems to be an appropriate model
+
+```
+
+## Question 2: Does bee community richness differ between restored (treatment) and unrestored (control) plots?
+
+```{r question 2 model selection}
+# Build model with all fixed and random effects
+bee_rich_m1 <- glmer(bee_richness~treatment*nesttype + scale_fl + (1|site) + (1|year), data = richness_NArm, family = poisson)
+
+# Only site random effect
+bee_rich_m2 <- glmer(bee_richness~treatment*nesttype + scale_fl + (1|site), data = richness_NArm, family = poisson)
+
+# Only year random effect
+bee_rich_m3 <- glmer(bee_richness~treatment*nesttype + scale_fl + (1|year), data = richness_NArm, family = poisson)
+
+# No random effects (GLM)
+bee_rich_m4 <- glm(bee_richness~treatment*nesttype + scale_fl, data = richness_NArm, family = poisson)
+
+# AIC comparison to evaluate random effects
+anova(bee_rich_m1, bee_rich_m2, bee_rich_m3, bee_rich_m4)
+# The model including only site as a random effect has the lowest AIC
+
+# Is a Poisson or negative binomial error distribution more appropriate?
+bee_rich_m5 <- glmer.nb(bee_richness~treatment*nesttype + scale_fl + (1|site), data = richness_NArm)
+anova(bee_rich_m2, bee_rich_m5)
+# AIC values suggest the Poisson is a better fit, as does the warning ("iteration limit reached") from glmer.nb; now check with DHARMa
+
+Anova(bee_rich_m2)
+# Only treatment by nesting location interaction is not significant - try removing from model
+bee_rich_m2a <- glmer(bee_richness~treatment + nesttype + scale_fl + (1|site), data = richness_NArm, family = poisson)
+anova(bee_rich_m2, bee_rich_m2a)
+# Model without interaction has lower AIC - remove interaction
+
+bee_rich_m2_sim <- simulateResiduals(fittedModel = bee_rich_m2, plot = F)
+plot(bee_rich_m2_sim)
+
+bee_rich_m2a_sim <- simulateResiduals(fittedModel = bee_rich_m2a, plot = F)
+plot(bee_rich_m2a_sim)
+# Residuals of both potential model versions deviate from expected quantiles
+
+```
+
+## Question 3: Does the number of bee species with which plants interact differ between restored (treatment) and unrestored (control) plots?
+
+```{r question 3 model selection}
+# plant species, site, and year as random effects - use plant species as random slope to account for possible differences in effect of restoration on different plant species (as opposed to plant species responding similarly to treatment and only differing in baseline number of interactions)
+int_m1 <- glmer(n_interactions ~ treatment + scale_count + (treatment|plantname) + (1|site) + (1|year), data = interactions, family = poisson)
+summary(int_m1)
+# singular fit, variance for year random effect is zero; try without year random effect
+int_m2 <- glmer(n_interactions ~ treatment + scale_count + (treatment|plantname) + (1|site), data = interactions, family = poisson)
+
+# With plant species random effect only
+int_m3 <- glmer(n_interactions ~ treatment + scale_count + (treatment|plantname), data = interactions, family = poisson)
+
+# With site random effect only
+int_m4 <- glmer(n_interactions ~ treatment + scale_count + (1|site), data = interactions, family = poisson)
+
+# With no random effects (GLM)
+int_m5 <- glm(n_interactions ~ treatment + scale_count, data = interactions, family = poisson)
+
+# AIC comparison to evaluate random effects
+anova(int_m2, int_m3, int_m4, int_m5)
+# The model with both plant species and site as random effects has the lowest AIC
+
+# Fit with negative binomial distribution
+int_m2a <- glmer.nb(n_interactions ~ treatment + scale_count + (treatment|plantname) + (1|site), data = interactions)
+anova(int_m2, int_m2a)
+# Negative binomial distribution seems to be a better fit than Poisson
+
+int_m2a_sim <- simulateResiduals(fittedModel = int_m2a, plot = F)
+plot(int_m2a_sim)
+
+# Still significant deviation of residuals from expected quantiles.
+
+```
+
+
+#### Results
+11,921 floral survey records and 10,989 records of species-level bee-plant interactions were collected across the study sites, including observations of 255 plant species and 175 bee species. While plant communities were not completely nested between unrestored control plots and restored plots, 49% of plant species (125 species) were found in both treatments. Similarly, 59% of bee species (104 species) were recorded in both restored and unrestored plots.
+
+```{r basic data statistics}
+
+# How many floral survey records?
+nrow(fl_counts)
+
+# How many bee-plant interaction records?
+nrow(cig_spec)
+
+# How many plants occur in both restored and unrestored plots?
+C_fl <- unique(filter(fl_counts, t_c == "C")$plantname)
+T_fl <- unique(filter(fl_counts, t_c == "T")$plantname)
+both_fl <- unique(T_fl[T_fl %in% C_fl])
+length(both_fl)
+length(both_fl)/length(unique(fl_counts$plantname))
+
+# How many bees occur in both restored and unrestored plots?
+C_bee <- unique(filter(cig_spec, treatment == "C")$beename)
+T_bee <- unique(filter(cig_spec, treatment == "T")$beename)
+both_bee <- unique(T_bee[T_bee %in% C_bee])
+length(both_bee)
+length(both_bee)/length(unique(cig_spec$beename))
+
+```
+
+## Plant Community Richness vs. Treatment
+
+Plant community richness was significantly greater in restored plots than in unrestored plots (two-way anova, p < 0.001).
+
+```{r question 1 results, echo=FALSE}
+
+# Two-way anova: does floral richness differ significantly between treatment plot types?
+Anova(fl_rich_m5, test = "Chisq")
+# Yes, the two treatments differ significantly (p < 0.001)
+summary(fl_rich_m5)
+# Richness is greater in restored (treatment) plots than unrestored (control) plots
+
+# Plot coefficients
+fl_rich_m5_means <- glmer.nb(plant_richness ~ -1+treatment + (1|site) + (1|year), data = richness)
+fl_rich_CI <- confint(fl_rich_m5_means, oldNames = F)
+fl_rich_coefs <- as.numeric(c(exp(fixef(fl_rich_m3_means)[[1]]), exp(fixef(fl_rich_m3_means)[[2]])))
+fl_rich_lower <- as.numeric(c(exp(fl_rich_CI[3]), exp(fl_rich_CI[4])))
+fl_rich_upper <- as.numeric(c(exp(fl_rich_CI[7]), exp(fl_rich_CI[8])))
+
+fl_rich_plot <- as.data.frame(cbind(levels(richness$treatment), as.numeric(as.character(fl_rich_coefs)), as.numeric(as.character(fl_rich_lower)), as.numeric(as.character(fl_rich_upper))))
+names(fl_rich_plot) <- c("treatment", "coef", "lower", "upper")
+
+plot1 <- ggplot(fl_rich_plot, aes(x = treatment, y = as.numeric(as.character(coef))))+
+  geom_point()+
+  geom_errorbar(aes(ymin = as.numeric(as.character(lower)), ymax = as.numeric(as.character(upper))), width = 0.2, position = position_dodge(0.9))+
+  xlab("Treatment") + ylab("Floral Richness")+scale_x_discrete(labels = c("Control", "Restored")) +
+  annotate("text", x=2.3, y=0, label= "***p < 0.001", color = "red", fontface = "bold", size = 5) +
+  annotate("text", x=1, y=27, label= "a", fontface = "bold") + annotate("text", x = 2, y = 27, label = "b", fontface = "bold")
+plot1
+
+```
+
+## Bee Community Richness vs. Treatment
+
+Bee species richness was also significantly greater in restored than unrestored plots (two-way anova, p < 0.001). The final model selected to test this question did not include an interaction between treatment and bee nesting functional group (interaction was not significant), suggesting that richness of both ground-nesting and above-ground-nesting bee guilds may be affected similarly by field restoration.
+
+```{r question 2 results, echo=FALSE}
+
+# Two-way anova: does bee richness differ significantly between treatment plot types?
+Anova(bee_rich_m2a, test = "Chisq")
+# Yes, the two treatments differ significantly (p < 0.001)
+summary(bee_rich_m2a)
+# Richness is greater in restored (treatment) plots than unrestored (control) plots
+
+# Plot coefficients
+bee_rich_m2a_means <- glmer(bee_richness ~ -1+treatment + nesttype + scale_fl + (1|site), data = richness_NArm, family = poisson)
+bee_rich_CI <- confint(bee_rich_m2a_means, oldNames = F)
+bee_rich_coefs <- as.numeric(c(exp(fixef(bee_rich_m2a_means)[[1]]), exp(fixef(bee_rich_m2a_means)[[2]])))
+bee_rich_lower <- as.numeric(c(exp(bee_rich_CI[2]), exp(bee_rich_CI[3])))
+bee_rich_upper <- as.numeric(c(exp(bee_rich_CI[7]), exp(bee_rich_CI[8])))
+
+bee_rich_plot <- as.data.frame(cbind(levels(richness$treatment), as.numeric(as.character(bee_rich_coefs)), as.numeric(as.character(bee_rich_lower)), as.numeric(as.character(bee_rich_upper))))
+names(bee_rich_plot) <- c("treatment", "coef", "lower", "upper")
+
+plot2 <- ggplot(bee_rich_plot, aes(x = treatment, y = as.numeric(as.character(coef))))+
+  geom_point()+
+  geom_errorbar(aes(ymin = as.numeric(as.character(lower)), ymax = as.numeric(as.character(upper))), width = 0.2, position = position_dodge(0.9))+
+  xlab("Treatment") + ylab("Bee Richness")+scale_x_discrete(labels = c("Control", "Restored")) +
+  annotate("text", x=2.3, y=0, label= "***p < 0.001", color = "red", fontface = "bold", size = 5) +
+  annotate("text", x=1, y=10, label= "a", fontface = "bold") + annotate("text", x = 2, y = 10, label = "b", fontface = "bold")
+plot2
+
+```
+
+## Bee-Plant Interactions vs. Treatment
+
+The number of bee species with which plants interacted was not significantly greater in restored plots than in unrestored plots (two-way anova, p = 0.160).
+
+```{r question 3 results, echo=FALSE}
+
+int_m2a_means <- glmer.nb(n_interactions ~ -1+treatment + scale_count + (1|plantname) + (1|site), data = interactions)
+Anova(int_m2a)
+int_CI <- confint(int_m2a_means, oldNames = F)
+int_coefs <- as.numeric(c(exp(fixef(int_m2a_means)[[1]]), exp(fixef(int_m2a_means)[[2]])))
+int_lower <- as.numeric(c(exp(int_CI[3]), exp(int_CI[4])))
+int_upper <- as.numeric(c(exp(int_CI[8]), exp(int_CI[9])))
+
+int_plot <- as.data.frame(cbind(levels(interactions$treatment), int_coefs, int_lower, int_upper))
+names(int_plot) <- c("treatment", "coef", "lower", "upper")
+
+plot3 <- ggplot(int_plot, aes(x = treatment, y = as.numeric(as.character((coef)))))+
+  geom_point()+
+  geom_errorbar(aes(ymin = as.numeric(as.character(lower)), ymax = as.numeric(as.character(upper))), width = 0.2, position = position_dodge(0.9))+
+  xlab("Treatment") + ylab("Interaction Diversity")+scale_x_discrete(labels = c("Control", "Restored")) +
+  annotate("text", x=2.3, y=0, label= "p = 0.16", color = "blue", fontface = "bold", size = 5) +
+  annotate("text", x=1, y=6, label= "a", fontface = "bold") + annotate("text", x = 2, y = 6, label = "a", fontface = "bold")
+plot3
+
+```
+
+#### Discussion
+
+My analysis provides preliminary insight on the implications of restoration for plant and bee communities, as well as plant-bee interactions. My results affirm the utility of restoration in accomplishing its most basic goals of augmenting plant and bee community richness, but suggest that it may fall short of establishing strong, interconnected networks of interactions. While not unexpected, the observed difference in plant richness between restored and unrestored plots indicates shows that restored plots successfully augmented floral communities: plants present in restored sites were representative of not only new introductions, but also remnants of the former old-field community. Further analysis of the identity of carry-over species and long-term competitive dynamics within restoration sites may be warranted to determine whether continued presence of old-field species is desirable in building a robust resource base with which to support bee diversity or possibly detrimental to long-term persistence of newly-introduced "restoration" species (particularly if invasive, exotic taxa are among those that carry over from the seed bank remaining from the previous community).
+
+Like plant richness, bee community richness was also found to be greater in restored than unrestored plots, presumably in response to increased floral richness. The lack of a significant interaction between treatment and bee nesting guild suggests that both ground-nesting and above-ground nesting taxa responded similarly to restoration. Further investigation into effects of abiotic factors on bees of different functional groups would be facilitated by additional data regarding availability and proximity of nesting substrates, particularly bare ground and twigs and stems.
+
+Interaction diversity did not differ significantly between treatment types, despite greater bee richness in restored plots. The underlying mechanisms responsible for the lack of change in interaction diversity between treatments is unclear, as is the significance of this lack of change for plant communities. Although used relatively infrequently in studies of plant-pollinator network change in response to restoration, null models may be an additional useful tool for differentiating observed interactions per plant species from expectated values in a community with equivalent plant and bee richness, potentially allowing for differentiation of effects of richness alone from other possible mechanisms, such as resource partitioning.
+
+#### Bibliography
+
+Albrecht, M., Schmid, B., Hautier, Y. & Müller, C. B. Diverse pollinator communities enhance plant reproductive success. Proceedings of the Royal Society B: Biological Sciences 279, 4845–4852 (2012).
+Colla, S. R. & Packer, L. Evidence for decline in eastern North American bumblebees (Hymenoptera: Apidae), with special focus on Bombus affinis Cresson. Biodivers Conserv 17, 1379 (2008).
+Ebeling, A., Klein, A.-M., Schumacher, J., Weisser, W. W. & Tscharntke, T. How does plant richness affect pollinator richness and temporal stability of flower visits? Oikos 117, 1808–1815 (2008).
+Feinsinger, P. Effects of plant species on each other’s pollination : is community structure influenced? Trends in Ecology and Evolution 2, 4 (1987).
+Menz, M. H. M. et al. Reconnecting plants and pollinators: challenges in the restoration of pollination mutualisms. Trends in Plant Science 16, 4–12 (2011).
+Ollerton, J., Winfree, R. & Tarrant, S. How many flowering plants are pollinated by animals? Oikos 120, 321–326 (2011).
+Fowler, J. Specialist Bees of the Northeast: Host Plants and Habitat Conservation. nena 23, 305–320 (2016).
+Williams, P. H. The Distribution and Decline of British Bumble Bees (Bombus Latr.). Journal of Apicultural Research 21, 236–245 (1982).
+Roulston, T. H. & Goodell, K. The Role of Resources and Risks in Regulating Wild Bee Populations. Annual Review of Entomology 56, 293–312 (2011).
