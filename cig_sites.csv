@@ -1,0 +1,43 @@
+"","site_full","site","Name","T_C","latitude","longitude","state","county","country","Projects","y2011","y2012","y2013","y2014","y2015","n_years"
+"1","Abrams","AB","AB_C","C","39.772882","-74.772184","NJ","Burlington","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","XercesCIG",4
+"2","Abrams","AB","AB_T","T","39.780504","-74.767308","NJ","Burlington","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","XercesCIG",4
+"3","Allamuchy","AL","AL_C","C","40.92378","-74.813615","NJ","Warren","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","XercesCIG",4
+"4","Allamuchy","AL","AL_T","T","40.926863","-74.813052","NJ","Warren","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","XercesCIG",4
+"5","Bowers","BO","BO_C","C","40.356694","-74.930745","NJ","Hunterdon ","USA","Xerces_1 year_NatCIG 2011","NatCIG","","XercesCIG","","",2
+"6","Bowers","BO","BO_T","T","40.355358","-74.930309","NJ","Hunterdon ","USA","Xerces_1 year_NatCIG 2011","NatCIG","","XercesCIG","","",2
+"7","Bellview","BW","BW_C","C","39.536493","-74.934855","NJ","Atlantic","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","",3
+"8","Bellview","BW","BW_T","T","39.536073","-74.932563","NJ","Atlantic","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","",3
+"9","Cranbury","CR","CR_C","C","40.311714","-74.52176","NJ","Middlesex ","USA","NatCIG","NatCIG","","","","",1
+"10","Cranbury","CR","CR_T","T","40.31095","-74.5186","NJ","Middlesex ","USA","NatCIG","NatCIG","","","","",1
+"11","DeanFischer","DF","DF_C","C","39.919101","-74.790498","NJ","Burlington","USA","NatCIG","","NatCIG","","","",1
+"12","DeanFischer","DF","DF_T","T","39.9198","-74.790006","NJ","Burlington","USA","NatCIG","","NatCIG","","","",1
+"13","Dottavio","DO","DO_C","C","39.493386","-74.965366","NJ","Cumberland","USA","Xerces_CIG","","","","XercesCIG","",1
+"14","Dottavio","DO","DO_T","T","39.493867","-74.965988","NJ","Cumberland","USA","Xerces_CIG","","","","XercesCIG","",1
+"15","DandR Greenway","DR","DR_C","C","40.299382","-74.565924","NJ","Mercer","USA","NatCIG_XercesCIG","","","Both","XercesCIG","XercesCIG",3
+"16","DandR Greenway","DR","DR_T","T","40.298445","-74.56289","NJ","Mercer","USA","NatCIG_XercesCIG","","","Both","XercesCIG","XercesCIG",3
+"17","Fox Hill","FH","FH_C","C","40.694391","-74.754039","NJ","Hunterdon","USA","NatCIG_XercesCIG","","","Both","XercesCIG","XercesCIG",3
+"18","Fox Hill","FH","FH_T","T","40.695583","-74.755843","NJ","Hunterdon","USA","NatCIG_XercesCIG","","","Both","XercesCIG","XercesCIG",3
+"19","Heritage Park","HP","HP_C","C","40.666476","-75.046523","NJ","Hunterdon ","USA","NatCIG","NatCIG","","","","",1
+"20","Heritage Park","HP","HP_T","T","40.667605","-75.047923","NJ","Hunterdon ","USA","NatCIG","NatCIG","","","","",1
+"21","Martinelli","MA","MA_C","C","39.264481","-74.719008","NJ","Cape May","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","",3
+"22","Martinelli","MA","MA_T","T","39.263113","-74.719499","NJ","Cape May","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","",3
+"23","Melba Battin","MB","MB_C","C","40.477714","-74.518216","NJ","Somerset","USA","Xerces_CIG","","","","XercesCIG","XercesCIG",2
+"24","Melba Battin","MB","MB_T","T","40.477937","-74.519552","NJ","Somerset","USA","Xerces_CIG","","","","XercesCIG","XercesCIG",2
+"25","Motyka","MO","MO_C","C","41.159303","-74.733277","NJ","Sussex","USA","NatCIG","NatCIG","","","","",1
+"26","Motyka","MO","MO_T","T","41.157361","-74.732419","NJ","Sussex","USA","NatCIG","NatCIG","","","","",1
+"27","Mullen","MU","MU_C","C","40.609513","-74.91145","NJ","Hunterdon","USA","NatCIG","","","NatCIG","","",1
+"28","Mullen","MU","MU_T","T","40.610223","-74.908613","NJ","Hunterdon","USA","NatCIG","","","Both","","",1
+"29","Pulig","PU","PU_C","C","39.951979","-77.23875","PA","Adams","USA","NatCIG","","","Both","","",1
+"30","Pulig","PU","PU_T","T","39.951065","-77.241008","PA","Adams","USA","NatCIG","","","Both","","",1
+"31","RandL Orchard","RL","RL_C","C","39.854874","-77.374393","PA","Adams","USA","NatCIG","","","Both","","",1
+"32","RandL Orchard","RL","RL_T","T","39.856018","-77.373964","PA","Adams","USA","NatCIG","","","Both","","",1
+"33","Rottengen","RO","RO_C","C","40.885194","-75.013669","NJ","Warren","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","XercesCIG",4
+"34","Rottengen","RO","RO_T","T","40.884492","-75.012517","NJ","Warren","USA","NatCIG_XercesCIG","","NatCIG","XercesCIG","XercesCIG","XercesCIG",4
+"35","Scotia","SC","SC_C","C","39.953689","-74.773836","NJ","Burlington","USA","NatCIG","NatCIG","","","","",1
+"36","Scotia","SC","SC_T","T","39.956489","-74.77178","NJ","Burlington","USA","NatCIG","NatCIG","","","","",1
+"37","Sheppard","SH","SH_C","C","39.326989","-75.244969","NJ","Cumberland","USA","NatCIG_XercesCIG","","","Both","XercesCIG","XercesCIG",3
+"38","Sheppard","SH","SH_T","T","39.330081","-75.251231","NJ","Cumberland","USA","NatCIG_XercesCIG","","","Both","XercesCIG","XercesCIG",3
+"39","URWA","URWA","URWA_C","C","40.701794","-74.700673","NJ","Somerset","USA","NatCIG_XercesCIG","NatCIG","","XercesCIG","XercesCIG","XercesCIG",4
+"40","URWA","URWA","URWA_T","T","40.703892","-74.700793","NJ","Somerset","USA","NatCIG_XercesCIG","NatCIG","","XercesCIG","XercesCIG","XercesCIG",4
+"41","Wolf","WO","WO_C","C","39.990884","-74.693699","NJ","Burlington","USA","not_used","","","XercesCIG","","",1
+"42","Wolf","WO","WO_T","T","39.989904","-74.697815","NJ","Burlington","USA","not_used","","","XercesCIG","","",1
